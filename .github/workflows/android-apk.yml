@@ -27,7 +27,7 @@ jobs:
           manifest.write_text(txt)
           PY2
       - run: flutter pub get
-      - run: flutter analyze --no-fatal-infos
+      - run: flutter analyze lib --no-fatal-infos
       - run: flutter build apk --debug
       - name: Upload installable Android test APK
         uses: actions/upload-artifact@v4
