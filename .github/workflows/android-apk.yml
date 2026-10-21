@@ -1,1 +1,37 @@
-
+name: Build Android APK
+on:
+  push:
+    branches: [main, master]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  android:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - name: Generate Android project
+        run: flutter create --platforms=android --project-name bazyaft_mobile --org ir.bazyaftdemo .
+      - name: Permit internet for OpenStreetMap map tiles
+        run: |
+          python3 - <<'PY2'
+          from pathlib import Path
+          manifest = Path('android/app/src/main/AndroidManifest.xml')
+          txt = manifest.read_text()
+          if '<uses-permission android:name="android.permission.INTERNET"' not in txt:
+              txt = txt.replace('<application', '<uses-permission android:name="android.permission.INTERNET" />\n    <application', 1)
+          manifest.write_text(txt)
+          PY2
+      - run: flutter pub get
+      - run: flutter analyze --no-fatal-infos
+      - run: flutter build apk --debug
+      - name: Upload installable Android test APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: bazyaft-android-test-apk
+          path: build/app/outputs/flutter-apk/app-debug.apk
+          if-no-files-found: error

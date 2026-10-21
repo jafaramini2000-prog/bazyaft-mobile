@@ -1,0 +1,28 @@
+name: Validate iOS Simulator Build
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  ios-simulator:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - name: Generate iOS project
+        run: flutter create --platforms=ios --project-name bazyaft_mobile --org ir.bazyaftdemo .
+      - name: Resolve Flutter dependencies
+        run: flutter pub get
+      - name: Analyze Dart code
+        run: flutter analyze --no-fatal-infos
+      - name: Build for iOS simulator (NOT for an iPhone device)
+        run: flutter build ios --simulator
+      - name: Upload simulator app for development only
+        uses: actions/upload-artifact@v4
+        with:
+          name: bazyaft-ios-simulator-development-only
+          path: build/ios/iphonesimulator/Runner.app
+          if-no-files-found: error
