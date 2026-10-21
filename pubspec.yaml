@@ -1,0 +1,19 @@
+name: bazyaft_mobile
+version: 0.2.0+2
+description: اپلیکیشن موبایل بومی آزمایشی جمع‌آوری بازیافت برای Android و iOS
+publish_to: none
+
+environment:
+  sdk: '>=3.5.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+  shared_preferences: ^2.5.3
+  flutter_map: ^8.2.2
+  latlong2: ^0.9.1
+
+flutter:
+  uses-material-design: true
