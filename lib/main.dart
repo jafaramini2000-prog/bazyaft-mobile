@@ -909,7 +909,7 @@ class _ServerPilotPanelState extends State<ServerPilotPanel> {
             DropdownMenuItem(value:'more_than_three',child:Text('بیشتر از سه کیسه')),
           ], onChanged: (v) {if (v != null) setState(() => bags=v);}),
         const SizedBox(height: 12),
-        FilledButton.icon(onPressed:busy ? null : _submitLive, icon:const Icon(Icons.send_rounded),child:const Text('ثبت درخواست واقعی روی سرور')),
+        FilledButton.icon(onPressed:busy ? null : _submitLive, icon:const Icon(Icons.send_rounded),label:const Text('ثبت درخواست واقعی روی سرور')),
       ])),
       const Padding(padding: EdgeInsets.only(bottom: 12),child:Text('پیگیری زنده درخواست‌ها', style:TextStyle(fontSize:19,fontWeight:FontWeight.w900))),
       const Text('شهروند فقط درخواست‌های خودش را می‌بیند. مدیر مجاز درخواست‌های همان شهر را می‌بیند. در این پایلوت فقط تأیید اولیه روی سرور فعال است؛ زمان‌بندی، اعزام و اعتبار نیازمند سامانه عملیاتی‌اند.',
