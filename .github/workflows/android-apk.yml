@@ -28,7 +28,14 @@ jobs:
           PY2
       - run: flutter pub get
       - run: flutter analyze lib --no-fatal-infos
-      - run: flutter build apk --debug
+      - name: Build Android APK (optional independent Supabase pilot)
+        env:
+          BAZYAFT_SUPABASE_URL: ${{ vars.BAZYAFT_SUPABASE_URL }}
+          BAZYAFT_SUPABASE_PUBLISHABLE_KEY: ${{ vars.BAZYAFT_SUPABASE_PUBLISHABLE_KEY }}
+        run: |
+          flutter build apk --debug \
+            --dart-define="SUPABASE_URL=$BAZYAFT_SUPABASE_URL" \
+            --dart-define="SUPABASE_PUBLISHABLE_KEY=$BAZYAFT_SUPABASE_PUBLISHABLE_KEY"
       - name: Upload installable Android test APK
         uses: actions/upload-artifact@v4
         with:
