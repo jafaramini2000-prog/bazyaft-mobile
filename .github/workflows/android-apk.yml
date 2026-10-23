@@ -1,4 +1,4 @@
-name: Build Android APK
+name: Build Offline Android APK
 on:
   push:
     branches: [main, master]
@@ -16,29 +16,22 @@ jobs:
           cache: true
       - name: Generate Android project
         run: flutter create --platforms=android --project-name bazyaft_mobile --org ir.bazyaftdemo .
-      - name: Permit internet for OpenStreetMap map tiles
+      - name: Permit OpenStreetMap tiles
         run: |
           python3 - <<'PY2'
           from pathlib import Path
-          manifest = Path('android/app/src/main/AndroidManifest.xml')
-          txt = manifest.read_text()
-          if '<uses-permission android:name="android.permission.INTERNET"' not in txt:
-              txt = txt.replace('<application', '<uses-permission android:name="android.permission.INTERNET" />\n    <application', 1)
-          manifest.write_text(txt)
+          m=Path('android/app/src/main/AndroidManifest.xml')
+          text=m.read_text()
+          if '<uses-permission android:name="android.permission.INTERNET"' not in text:
+              text=text.replace('<application', '<uses-permission android:name="android.permission.INTERNET" />\n    <application',1)
+          m.write_text(text)
           PY2
       - run: flutter pub get
       - run: flutter analyze lib --no-fatal-infos
-      - name: Build Android APK (optional independent Supabase pilot)
-        env:
-          BAZYAFT_SUPABASE_URL: ${{ vars.BAZYAFT_SUPABASE_URL }}
-          BAZYAFT_SUPABASE_PUBLISHABLE_KEY: ${{ vars.BAZYAFT_SUPABASE_PUBLISHABLE_KEY }}
-        run: |
-          flutter build apk --debug \
-            --dart-define="SUPABASE_URL=$BAZYAFT_SUPABASE_URL" \
-            --dart-define="SUPABASE_PUBLISHABLE_KEY=$BAZYAFT_SUPABASE_PUBLISHABLE_KEY"
-      - name: Upload installable Android test APK
+      - run: flutter build apk --debug
+      - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: bazyaft-android-test-apk
+          name: bazyaft-v05-offline-demo-apk
           path: build/app/outputs/flutter-apk/app-debug.apk
           if-no-files-found: error
