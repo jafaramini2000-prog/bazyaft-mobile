@@ -1,6 +1,6 @@
 name: bazyaft_mobile
-version: 0.4.0+5
-description: اپلیکیشن موبایل بومی آزمایشی جمع‌آوری بازیافت برای Android و iOS
+version: 0.5.0+6
+description: نمونه آفلاین و نمایشی اپلیکیشن بازیافت (بدون سرور)
 publish_to: none
 
 environment:
@@ -13,7 +13,6 @@ dependencies:
     sdk: flutter
   shared_preferences: 2.5.6
   google_fonts: 8.2.1
-  supabase_flutter: 2.18.3
   flutter_map: 8.2.2
   latlong2: 0.9.1
 
