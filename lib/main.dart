@@ -1,6 +1,4 @@
 import 'dart:convert';
-import 'dart:math';
-import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -16,15 +14,9 @@ const coral = Color(0xFFFFB565);
 const blue = Color(0xFF4E9FC3);
 const ink = Color(0xFF1D2924);
 
-const backendUrl = String.fromEnvironment('SUPABASE_URL');
-const backendKey = String.fromEnvironment('SUPABASE_PUBLISHABLE_KEY');
-const serverEnabled = backendUrl != '' && backendKey != '';
-
-Future<void> main() async {
+// Offline UI prototype. No database, authentication, or server connection.
+void main() {
   WidgetsFlutterBinding.ensureInitialized();
-  if (serverEnabled) {
-    await Supabase.initialize(url: backendUrl, anonKey: backendKey);
-  }
   runApp(const RecyclingApp());
 }
 
@@ -137,7 +129,7 @@ class _RecyclingShellState extends State<RecyclingShell> {
 
   void back() {
     if (screen == 'address' && editingAddressOnly) { goMain(tab); return; }
-    const prev = {'login':'welcome','materials':'main','quantity':'materials','address':'quantity','schedule':'address','review':'schedule','success':'main','tracking':'main','profile':'main'};
+    const prev = {'login':'welcome','materials':'main','quantity':'materials','address':'quantity','schedule':'address','review':'schedule','success':'main','tracking':'main','profile':'main','operations':'profile','driverDemo':'profile'};
     go(prev[screen] ?? 'main');
   }
 
@@ -423,6 +415,13 @@ class _RecyclingShellState extends State<RecyclingShell> {
         ]),
       ])),
       const SizedBox(height: 8),
+      sectionHeader('پشت صحنه بازیافت', hint: 'پنل‌های نمایشی', onMore: () => go('operations')),
+      Row(children: [
+        Expanded(child: miniFeature(emoji: '📊', title: 'پنل مدیر', caption: 'دیدن وضعیت همه درخواست‌های همین گوشی', color: const Color(0xFF84B4F7), onTap: () => go('operations'), badge: 'دمو')),
+        const SizedBox(width: 11),
+        Expanded(child: miniFeature(emoji: '🛵', title: 'پنل راننده', caption: 'مراحل تحویل و مأموریت آزمایشی', color: const Color(0xFFFFBA86), onTap: () => go('driverDemo'), badge: 'دمو')),
+      ]),
+      const SizedBox(height: 8),
       sectionHeader('یه نکته برای زمین 🌱'),
       panel(const Row(children: [
         CircleAvatar(radius: 24, backgroundColor: pale, child: Icon(Icons.tips_and_updates_rounded, color: deepGreen)),
@@ -431,7 +430,7 @@ class _RecyclingShellState extends State<RecyclingShell> {
           style: TextStyle(fontSize: 12.5, height: 1.75, fontWeight: FontWeight.w700))),
       ])),
       const SizedBox(height: 21),
-      Align(alignment: Alignment.center, child: tag('نسخه نمایشی • هنوز سرور و پذیرنده واقعی وصل نیست')),
+      Align(alignment: Alignment.center, child: tag('نسخه ۰.۵ آفلاین • هیچ سروری متصل نیست')),
     ]));
 
   Widget _city() => SingleChildScrollView(padding: const EdgeInsets.fromLTRB(19, 15, 19, 30),
@@ -457,6 +456,13 @@ class _RecyclingShellState extends State<RecyclingShell> {
           miniFeature(emoji: '🛍️', title: 'فروشگاه‌ها', caption: 'کالا و محصولات', color: const Color(0xFFB78DEF), onTap: () => _demoMerchantInfo('فروشگاه‌ها')),
           miniFeature(emoji: '🧰', title: 'خدمات شهری', caption: 'خدمات نزدیک شما', color: blue, onTap: () => _demoMerchantInfo('خدمات شهری')),
         ]),
+      const SizedBox(height: 13),
+      sectionHeader('ویترین نمونه پذیرندگان', hint: 'همه آزمایشی'),
+      _sampleMerchantCard('کافه نارنج • نمونه', 'کافه و نوشیدنی', '☕', const Color(0xFFFFEBD9)),
+      const SizedBox(height: 10),
+      _sampleMerchantCard('بازارچه سبز • نمونه', 'سوپرمارکت و خرید روزانه', '🥬', const Color(0xFFE2F5DF)),
+      const SizedBox(height: 10),
+      _sampleMerchantCard('رستوران باغ • نمونه', 'غذا و سفارش محلی', '🍽️', const Color(0xFFEDE6F9)),
       const SizedBox(height: 15),
       panel(const Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Text('قرار نیست فقط بازیافت کنیم!', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: deepGreen)),
@@ -612,6 +618,172 @@ class _RecyclingShellState extends State<RecyclingShell> {
           title: Text('پاداش جمع‌آوری آزمایشی'), trailing: Text('۱۲٬۵۰۰ +', style: TextStyle(color: green, fontWeight: FontWeight.w900)))))),
     ]));
 
+  Widget _sampleMerchantCard(String name, String category, String emoji, Color background) =>
+      InkWell(
+        onTap: () => _sampleMerchantSheet(name, category, emoji),
+        borderRadius: BorderRadius.circular(22),
+        child: panel(Row(children: [
+          Container(height: 58, width: 58, alignment: Alignment.center,
+            decoration: BoxDecoration(color: background, borderRadius: BorderRadius.circular(17)),
+            child: Text(emoji, style: const TextStyle(fontSize: 29))),
+          const SizedBox(width: 13),
+          Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Text(name, style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 14)),
+            const SizedBox(height: 4),
+            Text(category, style: const TextStyle(fontSize: 11, color: Colors.black54)),
+            const SizedBox(height: 6),
+            tag('پیش‌نمایش • پذیرنده واقعی نیست', color: const Color(0xFFFFF2E2), fg: const Color(0xFF966528)),
+          ])),
+          const Icon(Icons.chevron_left_rounded, color: green),
+        ])),
+      );
+
+  void _sampleMerchantSheet(String name, String category, String emoji) => showModalBottomSheet<void>(
+    context: context, showDragHandle: true, isScrollControlled: true,
+    shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(30))),
+    builder: (ctx) => SafeArea(child: Padding(
+      padding: const EdgeInsets.fromLTRB(22, 12, 22, 24),
+      child: Column(mainAxisSize: MainAxisSize.min, children: [
+        Text(emoji, style: const TextStyle(fontSize: 60)),
+        const SizedBox(height: 12),
+        Text(name, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w900)),
+        const SizedBox(height: 8),
+        Text(category, style: const TextStyle(color: Colors.black54)),
+        const SizedBox(height: 16),
+        const Icon(Icons.qr_code_2_rounded, color: deepGreen, size: 100),
+        const SizedBox(height: 10),
+        const Text('پیش‌نمایش پرداخت با اعتبار بازیافت', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w900)),
+        const SizedBox(height: 7),
+        const Text('این کد فقط تصویر نمایشی است؛ قابل اسکن، پرداخت یا تسویه نیست. در آینده پس از عقد قرارداد با پذیرنده و پیاده‌سازی امنیت پرداخت فعال می‌شود.',
+          textAlign: TextAlign.center, style: TextStyle(height: 1.8, fontSize: 12.5)),
+        const SizedBox(height: 18),
+        button('بازگشت به شهر من', () => Navigator.pop(ctx), icon: Icons.check_rounded),
+      ]))),
+  );
+
+  Widget _opsStat(String title, int count, IconData icon, Color tint) => Expanded(child: Container(
+    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 17),
+    decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(18),
+      border: Border.all(color: const Color(0xFFE7EFEB))),
+    child: Column(children: [
+      Icon(icon, color: tint, size: 26),
+      const SizedBox(height: 9),
+      Text(faNum(count), style: const TextStyle(fontSize: 23, fontWeight: FontWeight.w900)),
+      Text(title, textAlign: TextAlign.center, style: const TextStyle(fontSize: 10.5, color: Colors.black54)),
+    ]),
+  ));
+
+  Widget _operationsPreview() {
+    final pending = records.where((r) => ((r['status'] as int?) ?? 0) == 0).length;
+    final processing = records.where((r) {final n = (r['status'] as int?) ?? 0; return n >= 1 && n < 4;}).length;
+    final completed = records.where((r) => ((r['status'] as int?) ?? 0) == 4).length;
+    return SingleChildScrollView(padding: const EdgeInsets.all(19), child: Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+      header('پنل مدیر • پیش‌نمایش', caption: 'شبیه‌سازی جریان کاری؛ داده‌ها فقط از درخواست‌های ثبت‌شده روی همین گوشی‌اند.'),
+      panel(const Row(children: [
+        Icon(Icons.info_outline_rounded, color: deepGreen),
+        SizedBox(width: 10),
+        Expanded(child: Text('این صفحه پنل واقعی مدیر نیست. احراز هویت مدیر، درخواست کاربران دیگر و گزارش شهری هنوز فعال نیستند.',
+          style: TextStyle(fontSize: 12, height: 1.65))),
+      ]), color: pale),
+      const SizedBox(height: 15),
+      Row(children: [
+        _opsStat('کل درخواست‌ها', records.length, Icons.receipt_long_rounded, green),
+        const SizedBox(width: 8),
+        _opsStat('جدید', pending, Icons.fiber_new_rounded, blue),
+      ]),
+      const SizedBox(height: 8),
+      Row(children: [
+        _opsStat('در حال پیگیری', processing, Icons.local_shipping_outlined, const Color(0xFFD58941)),
+        const SizedBox(width: 8),
+        _opsStat('تکمیل نمایشی', completed, Icons.task_alt_rounded, green),
+      ]),
+      const SizedBox(height: 19),
+      sectionHeader('صف درخواست‌های آزمایشی'),
+      if (records.isEmpty) panel(Column(children: [
+        const Text('فعلاً درخواستی روی این گوشی ثبت نشده است.',
+          style: TextStyle(fontWeight: FontWeight.w700)),
+        const SizedBox(height: 13),
+        button('ثبت درخواست آزمایشی', startRequest),
+      ])),
+      ...List.generate(records.length, (index) {
+        final row = records[index];
+        final current = (row['status'] as int?) ?? 0;
+        return Padding(padding: const EdgeInsets.only(bottom: 12), child: panel(Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+          Row(children: [
+            const Icon(Icons.recycling_rounded, color: green),
+            const SizedBox(width: 9),
+            Expanded(child: Text('درخواست ${faNum(index + 1)}',
+              style: const TextStyle(fontWeight: FontWeight.w900))),
+            tag(states[current]),
+          ]),
+          const SizedBox(height: 9),
+          Text((row['materials'] as List).join('، '),
+            style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w800)),
+          const SizedBox(height: 6),
+          Text('نشانی: ${row['address']}', maxLines: 2,
+            overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 12, color: Colors.black54)),
+          const SizedBox(height: 12),
+          Row(children: [
+            Expanded(child: OutlinedButton(onPressed: () {recordIndex=index; go('tracking');},
+              child: const Text('جزئیات و مسیر'))),
+            const SizedBox(width: 8),
+            Expanded(child: FilledButton(onPressed: current>=4 ? null : () {recordIndex=index; advanceDemoStatus();},
+              child: const Text('مرحله بعد • دمو'))),
+          ]),
+        ])));
+      }),
+      const SizedBox(height: 10),
+      tag('نمایش محلی • بدون اتصال اینترنت، راننده یا کاربر دیگر'),
+    ]));
+  }
+
+  Widget _driverPreview() => SingleChildScrollView(
+    padding: const EdgeInsets.fromLTRB(19, 14, 19, 26),
+    child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+      header('پنل راننده • پیش‌نمایش', caption: 'نمایش طراحی مسیر کاری راننده، بدون مأموریت یا موقعیت زنده.'),
+      panel(const Row(children: [
+        Icon(Icons.delivery_dining_rounded, size: 46, color: deepGreen),
+        SizedBox(width: 12),
+        Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Text('شیفت آزمایشی', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 16)),
+          SizedBox(height: 4),
+          Text('مأموریت‌ها هنوز توسط سرور تخصیص داده نمی‌شوند.',
+            style: TextStyle(color: Colors.black54, fontSize: 12)),
+        ])),
+      ]), color: pale),
+      const SizedBox(height: 16),
+      sectionHeader('مأموریت‌های نمایشی'),
+      if (records.isEmpty) panel(const Column(children: [
+        Icon(Icons.route_rounded, color: green, size: 55),
+        SizedBox(height: 10),
+        Text('برای نمایش مأموریت، ابتدا یک درخواست آزمایشی ثبت کن.',
+          textAlign: TextAlign.center),
+      ])),
+      ...List.generate(records.length, (index) {
+        final row=records[index];
+        final current=(row['status'] as int?) ?? 0;
+        return Padding(padding: const EdgeInsets.only(bottom: 12), child: panel(Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+          Text('📍 ${row['address']}', maxLines: 2,
+            overflow: TextOverflow.ellipsis, style: const TextStyle(fontWeight: FontWeight.w800)),
+          const SizedBox(height: 8),
+          Text('${row['day']} • ${row['time']}',
+            style: const TextStyle(color: Colors.black54)),
+          const SizedBox(height: 8),
+          tag(states[current]),
+          const SizedBox(height: 12),
+          button('نمایش جزئیات این مأموریت', () {recordIndex=index;go('tracking');},
+            outline: true, icon: Icons.route_rounded),
+        ])));
+      }),
+      const SizedBox(height: 13),
+      const Text('توجه: نمایش اطلاعات در این صفحه به معنی دسترسی راننده به اطلاعات کاربران واقعی نیست. تخصیص مأموریت و مدیریت دسترسی در نسخه سروری پیاده‌سازی می‌شود.',
+        style: TextStyle(fontSize: 11.5, color: Colors.black54, height: 1.8)),
+    ]),
+  );
+
   Widget _profile() => SingleChildScrollView(padding: const EdgeInsets.all(20), child: Column(children: [
       const SizedBox(height: 16), const CircleAvatar(radius: 37, backgroundColor: pale, child: Icon(Icons.person_rounded, color: deepGreen, size: 40)),
       const SizedBox(height: 12), const Text('حساب آزمایشی', style: TextStyle(fontSize: 21, fontWeight: FontWeight.w900)), const SizedBox(height: 25),
@@ -622,13 +794,17 @@ class _RecyclingShellState extends State<RecyclingShell> {
         const Divider(height: 8),
         ListTile(leading: const Icon(Icons.wallet_rounded, color: green), title: const Text('کیف پول'), trailing: const Icon(Icons.chevron_left), onTap: () => goMain(3)),
         const Divider(height: 8),
-        ListTile(leading: const Icon(Icons.cloud_sync_rounded, color: green), title: const Text('آزمایش اتصال سرور و مانیتورینگ'),
-          subtitle: const Text('سامانه مشترک شهروند و مدیر • پایلوت ۰.۴'),
-          trailing: const Icon(Icons.chevron_left), onTap: () => go('pilot')),
+        ListTile(leading: const Icon(Icons.dashboard_customize_rounded, color: green), title: const Text('پیش‌نمایش پنل مدیر'),
+          subtitle: const Text('مدیریت درخواست‌های همین گوشی • کاملاً نمایشی'),
+          trailing: const Icon(Icons.chevron_left), onTap: () => go('operations')),
+        const Divider(height: 8),
+        ListTile(leading: const Icon(Icons.delivery_dining_rounded, color: green), title: const Text('پیش‌نمایش پنل راننده'),
+          subtitle: const Text('نمایش مأموریت و مراحل جمع‌آوری • دمو'),
+          trailing: const Icon(Icons.chevron_left), onTap: () => go('driverDemo')),
         const Divider(height: 8),
         const ListTile(leading: Icon(Icons.support_agent_rounded, color: green), title: Text('پشتیبانی'), subtitle: Text('در نسخه آزمایشی فعال نیست')),
       ])),
-      const SizedBox(height: 19), tag('نسخه ۰.۴ • سرور فقط در صورت پیکربندی مستقل فعال است'),
+      const SizedBox(height: 19), tag('نسخه ۰.۵ • آفلاین • اطلاعات فقط در این دستگاه'),
       const SizedBox(height: 20),
       button('بازگشت به شروع', () => go('welcome'), outline: true, icon: Icons.logout_rounded),
     ]));
@@ -667,7 +843,7 @@ class _RecyclingShellState extends State<RecyclingShell> {
   @override
   Widget build(BuildContext context) {
     if (screen == 'welcome') return Scaffold(body: _welcome());
-    const names = {'login':'ورود', 'materials':'نوع بازیافتی','quantity':'مقدار بازیافتی','address':'نشانی جمع‌آوری','schedule':'انتخاب زمان','review':'تأیید نهایی','success':'ثبت درخواست','tracking':'پیگیری درخواست','profile':'حساب من','pilot':'پایلوت سرور'};
+    const names = {'login':'ورود', 'materials':'نوع بازیافتی','quantity':'مقدار بازیافتی','address':'نشانی جمع‌آوری','schedule':'انتخاب زمان','review':'تأیید نهایی','success':'ثبت درخواست','tracking':'پیگیری درخواست','profile':'حساب من','operations':'پیش‌نمایش مدیریت','driverDemo':'پنل نمایشی راننده'};
     final child = switch (screen) {
       'login' => _login(),
       'materials' => _materials(),
@@ -678,297 +854,13 @@ class _RecyclingShellState extends State<RecyclingShell> {
       'success' => _success(),
       'tracking' => _tracking(),
       'profile' => _profile(),
-      'pilot' => const ServerPilotPanel(),
+      'operations' => _operationsPreview(),
+      'driverDemo' => _driverPreview(),
       _ => _mainPage(),
     };
     return PopScope(canPop: screen == 'main', onPopInvokedWithResult: (didPop, result) { if (!didPop) back(); }, child: Scaffold(
       appBar: screen == 'main' ? null : AppBar(title: Text(names[screen] ?? ''), leading: IconButton(icon: const Icon(Icons.arrow_forward_rounded), onPressed: back)),
       body: SafeArea(child: child),
     ));
-  }
-}
-
-
-// --- Server pilot: deliberately separate from the current local demo flow. ---
-// The public mobile app NEVER holds server secret/service-role keys.
-class ServerPilotPanel extends StatefulWidget {
-  const ServerPilotPanel({super.key});
-  @override
-  State<ServerPilotPanel> createState() => _ServerPilotPanelState();
-}
-
-class _ServerPilotPanelState extends State<ServerPilotPanel> {
-  final email = TextEditingController();
-  final password = TextEditingController();
-  final location = TextEditingController();
-  String material = 'plastic';
-  String bags = 'one';
-  bool busy = false;
-  bool registeredManager = false;
-  String? cityId;
-  String? cityName;
-  String? issue;
-  bool showLogin = true;
-
-  SupabaseClient get client => Supabase.instance.client;
-  User? get signedIn => serverEnabled ? client.auth.currentUser : null;
-
-  @override
-  void initState() {
-    super.initState();
-    if (serverEnabled && signedIn != null) {
-      showLogin = false;
-      _loadUserState();
-    }
-  }
-
-  @override
-  void dispose() {
-    email.dispose();
-    password.dispose();
-    location.dispose();
-    super.dispose();
-  }
-
-  Future<void> _loadUserState() async {
-    try {
-      final cities = await client.from('recycling_cities').select('id,name').eq('active',true).limit(1);
-      if (!mounted) return;
-      if (cities.isEmpty) {
-        setState(() => issue = 'هیچ شهر فعالی در سرور تعریف نشده است.');
-        return;
-      }
-      final role = await client.from('recycling_staff').select('role').eq('user_id',signedIn!.id).eq('active',true).maybeSingle();
-      if (!mounted) return;
-      setState(() {
-        cityId = cities.first['id'] as String;
-        cityName = cities.first['name'] as String;
-        registeredManager = role != null && (role['role'] == 'manager' || role['role'] == 'dispatcher');
-        issue = null;
-      });
-    } catch (e) {
-      if (mounted) setState(() => issue = 'خطای ارتباط با سرور: $e');
-    }
-  }
-
-  Future<void> _authenticate({required bool createAccount}) async {
-    if (email.text.trim().isEmpty || password.text.isEmpty) {
-      setState(() => issue = 'ایمیل و رمز عبور را وارد کن.');
-      return;
-    }
-    setState(() { busy = true; issue = null; });
-    try {
-      if (createAccount) {
-        final response = await client.auth.signUp(email: email.text.trim(), password: password.text);
-        if (!mounted) return;
-        if (response.session == null) {
-          setState(() => issue = 'حساب ایجاد شد؛ اگر تأیید ایمیل فعال است، ایمیل را تأیید کن و سپس وارد شو.');
-          return;
-        }
-      } else {
-        await client.auth.signInWithPassword(email: email.text.trim(), password: password.text);
-      }
-      if (!mounted) return;
-      setState(() => showLogin = false);
-      await _loadUserState();
-    } catch (e) {
-      if (mounted) setState(() => issue = 'ورود انجام نشد: $e');
-    } finally {
-      if (mounted) setState(() => busy = false);
-    }
-  }
-
-  String _uuid4() {
-    final random = Random.secure();
-    final bytes = List<int>.generate(16, (_) => random.nextInt(256));
-    bytes[6] = (bytes[6] & 15) | 64;
-    bytes[8] = (bytes[8] & 63) | 128;
-    final h = bytes.map((v) => v.toRadixString(16).padLeft(2, '0')).join();
-    return '${h.substring(0,8)}-${h.substring(8,12)}-${h.substring(12,16)}-${h.substring(16,20)}-${h.substring(20)}';
-  }
-
-  Future<void> _submitLive() async {
-    if (cityId == null || location.text.trim().isEmpty) {
-      setState(() => issue = 'نشانی یا شهر فعال مشخص نشده است.');
-      return;
-    }
-    setState(() { busy = true; issue = null; });
-    try {
-      await client.rpc('recycling_submit_pickup', params: {
-        'p_city_id': cityId,
-        'p_address': location.text.trim(),
-        'p_title': 'خانه',
-        'p_details': '',
-        'p_materials': [material],
-        'p_amount': bags,
-        'p_note': 'ثبت از نسخه آزمایشی ۰.۴',
-        'p_idempotency_key': _uuid4(),
-      });
-      if (mounted) {
-        location.clear();
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('درخواست روی سرور ثبت شد.')));
-      }
-    } catch (e) {
-      if (mounted) setState(() => issue = 'ثبت روی سرور انجام نشد: $e');
-    } finally {
-      if (mounted) setState(() => busy = false);
-    }
-  }
-
-  static const statusTitles = {
-    'submitted': 'ثبت شد', 'approved': 'تأیید شد', 'scheduled': 'زمان‌بندی شد',
-    'assigned': 'به راننده واگذار شد', 'en_route': 'مأمور در مسیر است',
-    'collected': 'جمع‌آوری شد', 'weighed': 'وزن‌کشی شد',
-    'credited': 'اعتبار تأیید شد', 'cancelled': 'لغو شد',
-  };
-
-  Future<void> _advanceStatus(String id, String status) async {
-    const following = {'submitted':'approved'}; // بعد از تأیید، مراحل نیازمند زمان‌بندی و راننده واقعی هستند.
-    final next = following[status];
-    if (next == null) return;
-    setState(() { busy = true; issue = null; });
-    try {
-      await client.rpc('recycling_update_pickup_status', params: {
-        'p_pickup_id': id, 'p_new_status': next,
-      });
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('وضعیت به «${statusTitles[next]}» تغییر کرد.')));
-    } catch (e) {
-      if (mounted) setState(() => issue = 'امکان تغییر وضعیت وجود ندارد: $e');
-    } finally {
-      if (mounted) setState(() => busy = false);
-    }
-  }
-
-  Widget _card(Widget child) => Container(
-    margin: const EdgeInsets.only(bottom: 14), padding: const EdgeInsets.all(18),
-    decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(22),
-      border: Border.all(color: const Color(0xFFE5ECE7))), child: child);
-
-  @override
-  Widget build(BuildContext context) {
-    if (!serverEnabled) {
-      return ListView(padding: const EdgeInsets.all(20), children: [
-        _card(const Column(children: [Icon(Icons.cloud_off_rounded, size: 64, color: green),
-          SizedBox(height: 12), Text('ارتباط با سرور هنوز پیکربندی نشده',
-            style: TextStyle(fontSize: 17, fontWeight: FontWeight.w900)),
-          SizedBox(height: 9), Text('این قسمت آماده اتصال به پروژه مستقل بازیافت است. داده‌های برنامه فعلاً فقط نمایشی و محلی‌اند.',
-            textAlign: TextAlign.center, style: TextStyle(height: 1.8))])),
-        const Text('برای فعال‌سازی سرور، SQL بسته را روی پروژه جدید بازیافت اجرا کن و آدرس پروژه و Publishable Key را در GitHub Actions Variables قرار بده. هرگز کلید Secret یا Service Role را داخل اپ قرار نده.',
-          style: TextStyle(height: 1.9, color: deepGreen)),
-      ]);
-    }
-    if (showLogin || signedIn == null) {
-      return ListView(padding: const EdgeInsets.all(20), children: [
-        _card(Column(children: [
-          const Icon(Icons.verified_user_rounded, size: 58, color: green),
-          const SizedBox(height: 12), const Text('ورود به پایلوت سرور', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900)),
-          const SizedBox(height: 8), const Text('ورود آزمایشی با ایمیل و رمز عبور؛ پیامک هنوز فعال نیست.', textAlign: TextAlign.center),
-          const SizedBox(height: 18),
-          TextField(controller: email, keyboardType: TextInputType.emailAddress,
-            textDirection: TextDirection.ltr, decoration: const InputDecoration(labelText: 'ایمیل', border: OutlineInputBorder())),
-          const SizedBox(height: 12),
-          TextField(controller: password, obscureText: true, textDirection: TextDirection.ltr,
-            decoration: const InputDecoration(labelText: 'رمز عبور', border: OutlineInputBorder())),
-          const SizedBox(height: 14),
-          FilledButton(onPressed: busy ? null : () => _authenticate(createAccount:false), child: const Text('ورود به سرور')),
-          TextButton(onPressed: busy ? null : () => _authenticate(createAccount:true), child: const Text('ساخت حساب شهروند آزمایشی')),
-        ])),
-        if (issue != null) _card(Text(issue!, style: const TextStyle(color: Colors.deepOrange))),
-      ]);
-    }
-    return ListView(padding: const EdgeInsets.all(19), children: [
-      _card(Row(children: [const Icon(Icons.cloud_done_rounded, size: 28, color: green),
-        const SizedBox(width: 10),
-        Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          const Text('سامانه مرکزی متصل است', style: TextStyle(fontWeight: FontWeight.w900)),
-          Text('${cityName ?? 'شهر فعال'} • ${registeredManager ? 'مدیر / پشتیبانی' : 'شهروند'}', style: const TextStyle(fontSize: 12)),
-        ])),
-        TextButton(onPressed: busy ? null : () async {
-          await client.auth.signOut(); if (mounted) setState(() {showLogin=true; registeredManager=false;});
-        }, child: const Text('خروج')),
-      ])),
-      if (!registeredManager) _card(Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-        const Text('ثبت درخواست روی سرور', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w900)),
-        const SizedBox(height: 12),
-        TextField(controller: location, maxLines: 2,
-          decoration: const InputDecoration(labelText: 'نشانی جمع‌آوری', border: OutlineInputBorder())),
-        const SizedBox(height: 13),
-        DropdownButtonFormField<String>(initialValue: material, decoration: const InputDecoration(labelText: 'نوع بازیافتی', border: OutlineInputBorder()),
-          items: const [
-            DropdownMenuItem(value:'plastic', child:Text('پلاستیک')),
-            DropdownMenuItem(value:'paper',child:Text('کاغذ و مقوا')),
-            DropdownMenuItem(value:'metal',child:Text('فلز')),
-            DropdownMenuItem(value:'glass',child:Text('شیشه')),
-            DropdownMenuItem(value:'other',child:Text('سایر')),
-          ], onChanged:(v) {if (v != null) setState(() => material=v);}),
-        const SizedBox(height: 12),
-        DropdownButtonFormField<String>(initialValue: bags, decoration: const InputDecoration(labelText: 'مقدار تقریبی', border: OutlineInputBorder()),
-          items: const [
-            DropdownMenuItem(value:'one',child:Text('یک کیسه')),
-            DropdownMenuItem(value:'two_or_three',child:Text('دو تا سه کیسه')),
-            DropdownMenuItem(value:'more_than_three',child:Text('بیشتر از سه کیسه')),
-          ], onChanged: (v) {if (v != null) setState(() => bags=v);}),
-        const SizedBox(height: 12),
-        FilledButton.icon(onPressed:busy ? null : _submitLive, icon:const Icon(Icons.send_rounded),label:const Text('ثبت درخواست واقعی روی سرور')),
-      ])),
-      const Padding(padding: EdgeInsets.only(bottom: 12),child:Text('پیگیری زنده درخواست‌ها', style:TextStyle(fontSize:19,fontWeight:FontWeight.w900))),
-      const Text('شهروند فقط درخواست‌های خودش را می‌بیند. مدیر مجاز درخواست‌های همان شهر را می‌بیند. در این پایلوت فقط تأیید اولیه روی سرور فعال است؛ زمان‌بندی، اعزام و اعتبار نیازمند سامانه عملیاتی‌اند.',
-        style: TextStyle(fontSize:12,height:1.6,color:Colors.black54)),
-      const SizedBox(height: 12),
-      if (issue != null) _card(Text(issue!,style:const TextStyle(color:Colors.deepOrange))),
-      if (cityId == null) _card(const Text('در حال خواندن شهر فعال و دسترسی حساب...')),
-      if (cityId != null)
-        StreamBuilder<List<Map<String, dynamic>>>(
-          stream: client.from('recycling_pickups').stream(primaryKey:['id']).eq('city_id',cityId!).order('created_at',ascending:false),
-          builder:(context,snapshot) {
-            if (snapshot.hasError) return _card(Text('خطا در دریافت وضعیت: ${snapshot.error}'));
-            if (!snapshot.hasData) return const Center(child:Padding(padding:EdgeInsets.all(25), child:CircularProgressIndicator()));
-            final rows=snapshot.data!;
-            if (rows.isEmpty) return _card(const Text('هنوز درخواستی روی سرور ثبت نشده است.'));
-            final pending = rows.where((r) => r['status'] == 'submitted').length;
-            return Column(children: [
-              if (registeredManager) _card(Row(children: [
-                const Icon(Icons.monitor_heart_rounded, color: green),
-                const SizedBox(width: 10),
-                Expanded(child: Text('کل درخواست‌ها: ${rows.length}   |   منتظر تأیید: $pending',
-                    style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w800))),
-              ])),
-              ...rows.map((row) {
-              final status=(row['status'] ?? 'submitted').toString();
-              final key=(row['id'] ?? '').toString();
-              final label=statusTitles[status] ?? status;
-              const next={'submitted':'approved'};
-              return _card(Column(crossAxisAlignment:CrossAxisAlignment.stretch, children:[
-                Row(children:[const Icon(Icons.recycling_rounded,color:green),const SizedBox(width:9),
-                  Expanded(child:Text('درخواست ${key.length>8 ? key.substring(0,8) : key}',style:const TextStyle(fontWeight:FontWeight.w900))),
-                  Container(padding:const EdgeInsets.symmetric(horizontal:9,vertical:5),
-                    decoration:BoxDecoration(color:pale,borderRadius:BorderRadius.circular(12)),
-                    child:Text(label,style:const TextStyle(color:deepGreen,fontSize:12,fontWeight:FontWeight.bold)))]),
-                const SizedBox(height:9),Text('ثبت: ${row['created_at'] ?? ''}',style:const TextStyle(fontSize:11,color:Colors.black54)),
-                const SizedBox(height:10),
-                ...['submitted','approved','scheduled','assigned','en_route','collected','weighed','credited'].asMap().entries.map((stage) {
-                  const stages = ['submitted','approved','scheduled','assigned','en_route','collected','weighed','credited'];
-                  final currentIndex = stages.indexOf(status);
-                  final done = currentIndex >= stage.key;
-                  return Padding(padding: const EdgeInsets.symmetric(vertical:3),child:Row(children:[
-                    Icon(done ? Icons.check_circle_rounded : Icons.circle_outlined,
-                      size:16,color:done ? green:Colors.grey.shade300),
-                    const SizedBox(width:8),
-                    Text(statusTitles[stage.value] ?? stage.value,style: TextStyle(fontSize:11,
-                      color:done ? deepGreen:Colors.black45,
-                      fontWeight:done ? FontWeight.w800:FontWeight.normal)),
-                  ]));
-                }),
-                if (registeredManager && next[status] != null) ...[
-                  const SizedBox(height:11),
-                  OutlinedButton(onPressed:busy ? null:()=>_advanceStatus(key,status),
-                    child:Text('ثبت مرحله بعد: ${statusTitles[next[status]]}')),
-                ],
-              ]));
-            }).toList(),
-            ]);
-          },
-        ),
-    ]);
   }
 }
